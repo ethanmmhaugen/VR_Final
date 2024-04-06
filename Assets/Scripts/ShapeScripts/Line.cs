@@ -15,7 +15,7 @@ public class Line : Grabbable
     private Vector3[] vertPositions = new Vector3[2];
     private float lineWidth = 0.03f;
     private CapsuleCollider localHitbox;
-    public bool isPartOfShape = false;
+    public bool isPartOfFace = false;
     private bool beingGrabbed = false;
     private IEnumerator grabCR;
     private bool grabbableCoroutineRunning = false;
@@ -78,7 +78,22 @@ public class Line : Grabbable
 
     public override Grabbable Pinch()
     {
-        throw new System.NotImplementedException();
+        GameObject newVert = Instantiate(vert1);
+        GameObject newLine1 = new GameObject("NewLine1");
+        GameObject newLine2 = new GameObject("NewLine2");
+        Line nl1Line = newLine1.AddComponent<Line>();
+
+        nl1Line.vert1 = vert1;
+        nl1Line.vert2 = newVert;
+
+        Line nl2Line = newLine2.AddComponent<Line>();
+        nl2Line.vert1 = vert2;
+        nl2Line.vert2 = newVert;
+        nl2Line.isPartOfFace = true;
+        nl1Line.isPartOfFace = true;
+        isPartOfFace = true;
+        
+        return newVert.GetComponent<Vertex>();
     }
 
     IEnumerator ResetGrabbed(bool spawnShape) {
@@ -97,7 +112,10 @@ public class Line : Grabbable
         beingGrabbed = true;
         
         bool shouldSpawnShape = false;
-        if(isPartOfShape) {
+        if(isPartOfFace) {
+            Vector3 direction = grabbingTrans.position - gameObject.transform.position;
+            vert1.transform.position += direction;
+            vert2.transform.position += direction;
             gameObject.transform.position = grabbingTrans.transform.position;
 
         } else {
@@ -109,8 +127,8 @@ public class Line : Grabbable
             GameObject newLine1 = new GameObject("NewLine1");
             GameObject newLine2 = new GameObject("NewLine2");
             
-            GameObject newVert1 = Instantiate(vert1,gameObject.transform);
-            GameObject newVert2 = Instantiate(vert2,gameObject.transform);
+            GameObject newVert1 = Instantiate(vert1);
+            GameObject newVert2 = Instantiate(vert2);
 
             newVert1.transform.position = vert1.transform.position;
             newVert2.transform.position = vert2.transform.position;
@@ -133,10 +151,10 @@ public class Line : Grabbable
             nl2Line.vert2 = newVert2;
 
             gameObject.transform.position = grabbingTrans.transform.position;
-            isPartOfShape = true;
-            nl1Line.isPartOfShape = true;
-            nl2Line.isPartOfShape = true;
-            dupLine.isPartOfShape = true;
+            isPartOfFace = true;
+            nl1Line.isPartOfFace = true;
+            nl2Line.isPartOfFace = true;
+            dupLine.isPartOfFace = true;
 
         }
 

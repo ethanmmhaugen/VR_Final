@@ -47,18 +47,25 @@ public class HandManager : MonoBehaviour
         DebugText.log($"{(isRightHand ? "Right": "Left")} hand: {_isIndexFingerPinching}");
         if (_isIndexFingerPinching || wasFingerPinching) {
                 if(isRightHand) {
+                    DebugText.log("Got Here");
                     if(!spawningVertex && currGrabbable == null) {
+                        DebugText.log("Got Here as well");
                         vertSpawner = spawnVertex();
                         StartCoroutine(vertSpawner);
 
                     } else if(currGrabbable != null) {
                         StopCoroutine(vertSpawner);
+                        DebugText.log("Stopping Coroutine");
+                        spawningVertex = false;
                     }
 
                 }
             
             // DebugText.log("Pinching");
             gameObject.transform.position = domHand.PointerPose.position;
+            if(debugSphere != null) {
+                debugSphere.transform.position = domHand.PointerPose.position;
+            }
 
             if(!hitDetector.enabled) {
                 SpawnHitBox(domHand);
@@ -74,6 +81,10 @@ public class HandManager : MonoBehaviour
             if(_confidence == OVRHand.TrackingConfidence.High) {
                 DestroyHitbox();
                 currGrabbable = null;
+                if(isRightHand) {
+
+                    DebugText.log("Resetting Curr Grabbable to Null");
+                }
             }
 
         }
@@ -87,7 +98,7 @@ public class HandManager : MonoBehaviour
 
         newVert.transform.position = domHand.PointerPose.position;
         spawningVertex = false;
-
+        vertSpawner = null;
     }
     void SpawnHitBox(OVRHand theHand) {
         if(!isDelayingHitbox) {
