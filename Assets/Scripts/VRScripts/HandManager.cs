@@ -1,7 +1,9 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class HandManager : MonoBehaviour
 {
@@ -46,6 +48,7 @@ public class HandManager : MonoBehaviour
         DebugText.log(_confidence.ToString());
         DebugText.log($"{(isRightHand ? "Right": "Left")} hand: {_isIndexFingerPinching}");
         if (_isIndexFingerPinching || wasFingerPinching) {
+                //CREATE VERTEX
                 if(isRightHand) {
                     DebugText.log("Got Here");
                     if(!spawningVertex && currGrabbable == null) {
@@ -144,6 +147,31 @@ public class HandManager : MonoBehaviour
 
     void OnTriggerEnter(Collider obj) {
         Grabbable grb = obj.gameObject.GetComponent<Grabbable>();
+        //MIGHT HAVE TO IMPLEMENT != or == for grabbable
+        if(grb != null && grb.GetType() == typeof(Vertex) && currGrabbable != null && currGrabbable.GetType() == typeof(Vertex) && grb != currGrabbable){
+            //grb = old vertex
+            //currgrabbable = new vertex
+            List<Line> currLines = grb.GetComponent<Vertex>().lines;
+            for(int i = 0; i<currLines.Count; i++){
+                Line currline = currLines[i];
+                if(currline.vert1 == grb){
+                    currline.vert1 = currGrabbable.gameObject;
+                    currGrabbable.GetComponent<Vertex>().lines.Add(currline);
+                }
+                else if(currline.vert2 == grb){
+                    currline.vert2 = currGrabbable.gameObject;
+                    currGrabbable.GetComponent<Vertex>().lines.Add(currline);
+                }
+                else{
+                    DebugText.log("Unexplained Error: Hand Manager Line 164");
+                }
+            }
+
+            //delete vertex
+            Destroy(grb.gameObject);
+
+        }
+
         if(grb != null) {
             if(isRightHand) { // pinch for right
                 if(currGrabbable == null) {

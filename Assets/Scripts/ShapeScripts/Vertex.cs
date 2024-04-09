@@ -6,7 +6,8 @@ using UnityEngine.Assertions;
 
 public class Vertex : Grabbable
 {
-
+    public List<Line> lines = new List<Line>();
+    
     // Start is called before the first frame update
     void Start()
     {
@@ -27,6 +28,7 @@ public class Vertex : Grabbable
         GameObject lineObj = new GameObject("NewLine");
 
         Line lineComponent = lineObj.GetOrAddComponent<Line>();
+        lines.Add(lineComponent);
         lineComponent.vert1 = gameObject;
         lineComponent.vert2 = newVert;
 

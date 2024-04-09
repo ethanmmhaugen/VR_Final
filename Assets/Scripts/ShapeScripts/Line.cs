@@ -92,6 +92,16 @@ public class Line : Grabbable
         nl2Line.isPartOfFace = true;
         nl1Line.isPartOfFace = true;
         isPartOfFace = true;
+
+        //In theory, adds the lines to the new vertex's list
+        Vertex newVertComp = newVert.GetComponent<Vertex>();
+        newVertComp.lines.Clear();
+        newVertComp.lines.Add(nl1Line);
+        newVertComp.lines.Add(nl2Line);
+
+        //In theory, adds the new lines to the existing vertices' lists
+        vert1.GetComponent<Vertex>().lines.Add(nl1Line);
+        vert2.GetComponent<Vertex>().lines.Add(nl2Line);
         
         return newVert.GetComponent<Vertex>();
     }
@@ -140,7 +150,6 @@ public class Line : Grabbable
             vert2 = newVert2;
 
 
-
             Line nl1Line = newLine1.AddComponent<Line>();
 
             nl1Line.vert1 = dupLine.vert1;
@@ -156,6 +165,25 @@ public class Line : Grabbable
             nl2Line.isPartOfFace = true;
             dupLine.isPartOfFace = true;
 
+            //Add lines to new vertices
+            Vertex newVert1Comp = newVert1.GetComponent<Vertex>();
+            Vertex newVert2Comp = newVert2.GetComponent<Vertex>();
+            newVert1Comp.lines.Clear();
+            newVert2Comp.lines.Clear();
+            newVert1Comp.lines.Add(gameObject.GetComponent<Line>());
+            newVert2Comp.lines.Add(gameObject.GetComponent<Line>());
+            newVert1Comp.lines.Add(nl1Line);
+            newVert2Comp.lines.Add(nl2Line);
+
+            //Add lines to old vertices
+            Vertex dupVert1Comp = dupLine.vert1.GetComponent<Vertex>();
+            Vertex dupVert2Comp = dupLine.vert2.GetComponent<Vertex>();
+            dupVert1Comp.lines.Clear();
+            dupVert2Comp.lines.Clear();
+            dupVert1Comp.lines.Add(dupLine.GetComponent<Line>());
+            dupVert2Comp.lines.Add(dupLine.GetComponent<Line>());
+            dupVert1Comp.lines.Add(nl1Line);
+            dupVert2Comp.lines.Add(nl2Line);
         }
 
         grabCR = ResetGrabbed(shouldSpawnShape);
