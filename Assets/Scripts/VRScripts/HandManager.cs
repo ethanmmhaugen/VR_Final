@@ -147,10 +147,12 @@ public class HandManager : MonoBehaviour
 
     void OnTriggerEnter(Collider obj) {
         Grabbable grb = obj.gameObject.GetComponent<Grabbable>();
+        DebugText.log("Entered Collision");
         //MIGHT HAVE TO IMPLEMENT != or == for grabbable
         if(grb != null && grb.GetType() == typeof(Vertex) && currGrabbable != null && currGrabbable.GetType() == typeof(Vertex) && grb != currGrabbable){
             //grb = old vertex
             //currgrabbable = new vertex
+            DebugText.log("Entered if statement for 2 vertices");
             List<Line> currLines = grb.GetComponent<Vertex>().lines;
             for(int i = 0; i<currLines.Count; i++){
                 Line currline = currLines[i];
