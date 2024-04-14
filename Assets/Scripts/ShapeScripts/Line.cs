@@ -25,7 +25,8 @@ public class Line : Grabbable
             Debug.LogError("Vert 1 or Vert 2 is null in Line Object");
         }
         SetupLinerenderer();
-
+        gameObject.tag = "Drawable";
+        DebugText.log("Setting Tag to drawable in line");
         localHitbox = gameObject.AddComponent<CapsuleCollider>();
 
     }
@@ -49,6 +50,9 @@ public class Line : Grabbable
     // Update is called once per frame
     void Update()
     {
+        if(vert1.GetInstanceID() == vert2.GetInstanceID() || vert1 == null || vert2 == null) {
+            Destroy(gameObject);
+        }
         UpdateLinePositions();
         UpdateCollider();
 
@@ -191,4 +195,19 @@ public class Line : Grabbable
         
         return gameObject.GetComponent<Line>();
     }
+    void OnDestroy() {
+        ClearSelfFromVert(vert2.GetComponent<Vertex>());
+        ClearSelfFromVert(vert1.GetComponent<Vertex>());
+    }
+
+    void ClearSelfFromVert(Vertex vert) {
+        
+        for(int i=0; i < vert.lines.Count; i ++) {
+            if(vert.lines[i].GetInstanceID() == GetInstanceID()) {
+                vert.lines.RemoveAt(i);
+                break;
+            }
+        }
+    }
+    
 }

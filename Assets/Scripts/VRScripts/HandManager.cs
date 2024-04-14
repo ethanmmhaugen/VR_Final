@@ -45,20 +45,20 @@ public class HandManager : MonoBehaviour
         _isIndexFingerPinching = domHand.GetFingerIsPinching(OVRHand.HandFinger.Index);
         _confidence = domHand.GetFingerConfidence(OVRHand.HandFinger.Index);
         
-        DebugText.log(_confidence.ToString());
-        DebugText.log($"{(isRightHand ? "Right": "Left")} hand: {_isIndexFingerPinching}");
+        // DebugText.log(_confidence.ToString());
+        // DebugText.log($"{(isRightHand ? "Right": "Left")} hand: {_isIndexFingerPinching}");
         if (_isIndexFingerPinching || wasFingerPinching) {
                 //CREATE VERTEX
                 if(isRightHand) {
-                    DebugText.log("Got Here");
+                    // DebugText.log("Got Here");
                     if(!spawningVertex && currGrabbable == null) {
-                        DebugText.log("Got Here as well");
+                        // DebugText.log("Got Here as well");
                         vertSpawner = spawnVertex();
                         StartCoroutine(vertSpawner);
 
                     } else if(currGrabbable != null) {
                         StopCoroutine(vertSpawner);
-                        DebugText.log("Stopping Coroutine");
+                        // DebugText.log("Stopping Coroutine");
                         spawningVertex = false;
                     }
 
@@ -73,8 +73,10 @@ public class HandManager : MonoBehaviour
             if(!hitDetector.enabled) {
                 SpawnHitBox(domHand);
             }
-
-            currGrabbable.Grab(domHand.PointerPose);
+            
+            if(currGrabbable != null) {
+                currGrabbable.Grab(domHand.PointerPose);
+            }
 
 
             
@@ -86,7 +88,7 @@ public class HandManager : MonoBehaviour
                 currGrabbable = null;
                 if(isRightHand) {
 
-                    DebugText.log("Resetting Curr Grabbable to Null");
+                    // DebugText.log("Resetting Curr Grabbable to Null");
                 }
             }
 
@@ -145,33 +147,99 @@ public class HandManager : MonoBehaviour
         // DebugText.log("Enabling Hitbox");
     }
 
+    void CleanLines(Vertex theVert) {
+        List<int> linesToRemove = new List<int>();
+        HashSet<int> seenVerts = new HashSet<int>();
+        HashSet<Line> seenLines = new HashSet<Line>();
+
+        for(int i =0; i < theVert.lines.Count; i ++) {
+            Line currLine  = theVert.lines[i];
+            DebugText.log($"in lines: {currLine.gameObject.name}");
+            if(seenLines.Contains(currLine)) {
+                linesToRemove.Add(i);
+                continue;
+            }
+            seenLines.Add(currLine);
+            
+            if (currLine.vert1.GetInstanceID() == currLine.vert2.GetInstanceID()) {
+                linesToRemove.Add(i);
+            } else if(currLine.vert1.GetInstanceID() == theVert.GetInstanceID()){
+                if(seenVerts.Contains(currLine.vert2.GetInstanceID())) {
+                    linesToRemove.Add(i);
+                } else {
+                    seenVerts.Add(currLine.vert2.GetInstanceID());
+                }
+            } else if(currLine.vert2.GetInstanceID() == theVert.GetInstanceID()) {
+                if(seenVerts.Contains(currLine.vert1.GetInstanceID())) {
+                    linesToRemove.Add(i);
+                } else {
+                    seenVerts.Add(currLine.vert1.GetInstanceID());
+                }
+            } else {
+                DebugText.log("we fucked up");
+            }
+        }
+
+        DebugText.log($"seenVerts size: {seenVerts.Count} linesToRemoveSize: {linesToRemove.Count}");
+        for(int i=0; i < linesToRemove.Count; i ++) {
+            Destroy(theVert.lines[linesToRemove[i]].gameObject);
+            DebugText.log($"Removed line at idx {linesToRemove[i]}. {theVert.lines[linesToRemove[i]].gameObject.name}" );
+
+            // theVert.lines.RemoveAt(linesToRemove[i]);
+
+        }
+
+    }
+    bool DoesLineExist(Vertex v1, Vertex v2, List<Line> lines) {
+        for(int i=0; i < lines.Count; i++) {
+            if((lines[i].vert1 == v1.gameObject && lines[i].vert2 == v2.gameObject) ||(lines[i].vert1 == v2.gameObject && lines[i].vert2 == v1.gameObject)) {
+                // DebugText.log("Found Duplicate line");
+                // DebugText.log($"V1: {v1.gameObject.name}");
+                return true;
+            }
+        }
+        DebugText.log("Did Not Find Duplicate Line");
+        return false;
+    }
     void OnTriggerEnter(Collider obj) {
         Grabbable grb = obj.gameObject.GetComponent<Grabbable>();
-        DebugText.log("Entered Collision");
+        // DebugText.log($"Entered Collision {obj.gameObject.name}");
         //MIGHT HAVE TO IMPLEMENT != or == for grabbable
-        if(grb != null && grb.GetType() == typeof(Vertex) && currGrabbable != null && currGrabbable.GetType() == typeof(Vertex) && grb != currGrabbable){
-            //grb = old vertex
-            //currgrabbable = new vertex
-            DebugText.log("Entered if statement for 2 vertices");
-            List<Line> currLines = grb.GetComponent<Vertex>().lines;
-            for(int i = 0; i<currLines.Count; i++){
-                Line currline = currLines[i];
-                if(currline.vert1 == grb){
-                    currline.vert1 = currGrabbable.gameObject;
-                    currGrabbable.GetComponent<Vertex>().lines.Add(currline);
+        // Debug.Log($"grb: {grb.gameObject}");
+        // Debug.Log($"currGrabbable{currGrabbable.gameObject}");
+        // DebugText.log($"Grb: {grb.GetType().ToString()}");
+        
+        if (grb != null && grb.GetType() == typeof(Vertex) && currGrabbable != null && currGrabbable.GetType() == typeof(Vertex) && grb.gameObject.GetInstanceID() != currGrabbable.gameObject.GetInstanceID()) {
+            List<Line> otherLines = grb.GetComponent<Vertex>().lines;
+            DebugText.log($"{otherLines.Count} {Time.time}");
+            for(int i = 0; i < otherLines.Count; i++){
+                Line currLine = otherLines[i];
+                
+                if(currLine.vert1 == grb.gameObject){
+                    currLine.vert1 = currGrabbable.gameObject;
+                    if(!DoesLineExist(currLine.vert1.GetComponent<Vertex>(),currLine.vert2.GetComponent<Vertex>(),currGrabbable.gameObject.GetComponent<Vertex>().lines)) {
+                        currGrabbable.GetComponent<Vertex>().lines.Add(currLine);
+                    } else {
+                        Destroy(currLine.gameObject);
+                    }
                 }
-                else if(currline.vert2 == grb){
-                    currline.vert2 = currGrabbable.gameObject;
-                    currGrabbable.GetComponent<Vertex>().lines.Add(currline);
+                else if(currLine.vert2 == grb.gameObject){
+                    currLine.vert2 = currGrabbable.gameObject;
+                    if(!DoesLineExist(currLine.vert1.GetComponent<Vertex>(),currLine.vert2.GetComponent<Vertex>(),currGrabbable.gameObject.GetComponent<Vertex>().lines)) {
+                        currGrabbable.GetComponent<Vertex>().lines.Add(currLine);
+                    } else {
+                        Destroy(currLine.gameObject);
+                    }
                 }
+                
                 else{
-                    DebugText.log("Unexplained Error: Hand Manager Line 164");
+                    DebugText.log("Unexplained Error: Hand Manager Line 217");
                 }
+
             }
-
-            //delete vertex
             Destroy(grb.gameObject);
-
+            // CleanLines(currGrabbable.gameObject.GetComponent<Vertex>());
+            grb = currGrabbable;
         }
 
         if(grb != null) {
