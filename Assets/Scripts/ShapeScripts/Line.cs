@@ -19,6 +19,7 @@ public class Line : Grabbable
     private bool beingGrabbed = false;
     private IEnumerator grabCR;
     private bool grabbableCoroutineRunning = false;
+    public bool isFace = false;
     void Start()
     {
         if(vert1 is null || vert2 is null) {

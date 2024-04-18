@@ -2,8 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Shape : Grabbable
+public class Shape : MonoBehaviour
 {
+    private Vector3[] lines;
+    private Vector3[] vertices;
+    private Vector3[] faces;
+    
     // Start is called before the first frame update
     void Start()
     {
@@ -14,13 +18,5 @@ public class Shape : Grabbable
     void Update()
     {
         
-    }
-    public override Grabbable Pinch()
-    {
-        throw new System.NotImplementedException();
-    }
-    public override Grabbable Grab(Transform grabbingTrans)
-    {
-        throw new System.NotImplementedException();
     }
 }
