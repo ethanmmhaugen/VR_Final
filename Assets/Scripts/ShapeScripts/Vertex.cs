@@ -7,6 +7,7 @@ using UnityEngine.Assertions;
 public class Vertex : Grabbable
 {
     public List<Line> lines = new List<Line>();
+    public List<Face> faces = new List<Face>();
     public bool allowOverwrite = true;
     public bool isFace = false;
 

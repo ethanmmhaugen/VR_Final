@@ -19,7 +19,7 @@ public class Line : Grabbable
     private bool beingGrabbed = false;
     private IEnumerator grabCR;
     private bool grabbableCoroutineRunning = false;
-    public bool isFace = false;
+    public List<Face> faces = new List<Face>();
     void Start()
     {
         if(vert1 is null || vert2 is null) {
@@ -189,6 +189,20 @@ public class Line : Grabbable
             dupVert2Comp.lines.Add(dupLine.GetComponent<Line>());
             dupVert1Comp.lines.Add(nl1Line);
             dupVert2Comp.lines.Add(nl2Line);
+
+            //Make the face
+            GameObject faceObj = new GameObject("NewFace");
+            Face faceComponent = faceObj.GetOrAddComponent<Face>();
+
+            faceComponent.vertices.Add(dupLine.vert1.GetComponent<Vertex>());
+            faceComponent.vertices.Add(dupLine.vert2.GetComponent<Vertex>());
+            faceComponent.vertices.Add(vert1.GetComponent<Vertex>());
+            faceComponent.vertices.Add(vert2.GetComponent<Vertex>());
+
+            faceComponent.lines.Add(gameObject.GetComponent<Line>());
+            faceComponent.lines.Add(dupLine);
+            faceComponent.lines.Add(newLine1.GetComponent<Line>());
+            faceComponent.lines.Add(newLine2.GetComponent<Line>());
         }
 
         grabCR = ResetGrabbed(shouldSpawnShape);
