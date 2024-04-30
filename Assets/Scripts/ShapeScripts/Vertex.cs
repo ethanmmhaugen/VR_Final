@@ -137,8 +137,17 @@ public class Vertex : Grabbable
         }
 
     }
-
-    public void SpawnNewFaces() {
+    private bool shouldFaceBePartOfShape() {
+        if(faces.Count == 0) return false;
+        foreach(Face f in faces) {
+            if(!f.isPartOfShape) {
+                return false;
+            }
+        }
+        return true;
+    }
+    IEnumerator SpawnNewFacesDispatch() {
+        yield return new WaitForSeconds(0.5f);
         Vertex theVert = gameObject.GetComponent<Vertex>(); // Get my vertex component
         List<Vertex> vertPath = new List<Vertex>{theVert};
         List<Line> linePath = new List<Line>();
@@ -168,12 +177,13 @@ public class Vertex : Grabbable
         faceLines = actualFaceLines;
 
 
-
+        bool isPartOfShape = shouldFaceBePartOfShape();
         for(int i=0; i < faceVerts.Count; i ++) {
             DebugText.log($"Face Verts[{i}]: {faceVerts[i].Count}");
             DebugText.log($"Face Lines[{i}]: {faceLines[i].Count}");
             GameObject go = new GameObject("NewFace");
             Face face = go.AddComponent<Face>();
+            face.isPartOfShape = isPartOfShape;
             DebugText.log("Looking for new face to spawn");
             for(int j =0; j < faceVerts[i].Count; j ++) {
                 face.vertices.Add(faceVerts[i][j]);
@@ -190,6 +200,9 @@ public class Vertex : Grabbable
                 }
             }
         }
+    }
+    public void SpawnNewFaces() {
+        StartCoroutine(SpawnNewFacesDispatch());
         
     }
     bool ShouldAddFace(Vertex v, Face newFace) {

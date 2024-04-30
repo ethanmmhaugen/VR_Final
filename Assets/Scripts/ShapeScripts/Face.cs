@@ -227,8 +227,9 @@ public class Face : Grabbable
                 originalFaceComp.vertices[v2Idx].faces.Add(faceComp);
 
             }
-
             isPartOfShape = true;
+            // originalFaceComp.GetComponent<MeshRenderer>().material.color = Color.red; // This line errors but it is the only way that i got it to work... Otherwise the face thats being grabbed is incorrect
+            return originalFaceGo.GetComponent<Face>();
         }
 
 
@@ -297,6 +298,13 @@ public class Face : Grabbable
         mesh.vertices = vertpos;
         mesh.triangles = triangles.ToArray();
         meshFilter.mesh = mesh;
+    }
+    void OnDestroy() {
+        foreach(Vertex vert in vertices) {
+            if( vert != null ){
+                vert.faces.Remove(gameObject.GetComponent<Face>());
+            }
+        }
     }
 
 }

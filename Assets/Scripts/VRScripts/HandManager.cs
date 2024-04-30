@@ -250,8 +250,8 @@ public class HandManager : MonoBehaviour
                 currGrabbable.Grab(domHand.PointerPose.transform.position);
 
             } else { //Grab for left hand
-                grb.Grab(domHand.PointerPose.transform.position);
-                currGrabbable = grb;
+                currGrabbable = grb.Grab(domHand.PointerPose.transform.position);
+                // currGrabbable = grb;
             }
 
             StartCoroutine(delayHitboxChecking(1f));
