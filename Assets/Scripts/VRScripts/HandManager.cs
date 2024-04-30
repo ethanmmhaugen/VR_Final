@@ -75,7 +75,7 @@ public class HandManager : MonoBehaviour
             }
             
             if(currGrabbable != null) {
-                currGrabbable.Grab(domHand.PointerPose);
+                currGrabbable.Grab(domHand.PointerPose.transform.position);
             }
 
 
@@ -147,49 +147,49 @@ public class HandManager : MonoBehaviour
         // DebugText.log("Enabling Hitbox");
     }
 
-    void CleanLines(Vertex theVert) {
-        List<int> linesToRemove = new List<int>();
-        HashSet<int> seenVerts = new HashSet<int>();
-        HashSet<Line> seenLines = new HashSet<Line>();
+    // void CleanLines(Vertex theVert) {
+    //     List<int> linesToRemove = new List<int>();
+    //     HashSet<int> seenVerts = new HashSet<int>();
+    //     HashSet<Line> seenLines = new HashSet<Line>();
 
-        for(int i =0; i < theVert.lines.Count; i ++) {
-            Line currLine  = theVert.lines[i];
-            DebugText.log($"in lines: {currLine.gameObject.name}");
-            if(seenLines.Contains(currLine)) {
-                linesToRemove.Add(i);
-                continue;
-            }
-            seenLines.Add(currLine);
+    //     for(int i =0; i < theVert.lines.Count; i ++) {
+    //         Line currLine  = theVert.lines[i];
+    //         DebugText.log($"in lines: {currLine.gameObject.name}");
+    //         if(seenLines.Contains(currLine)) {
+    //             linesToRemove.Add(i);
+    //             continue;
+    //         }
+    //         seenLines.Add(currLine);
             
-            if (currLine.vert1.GetInstanceID() == currLine.vert2.GetInstanceID()) {
-                linesToRemove.Add(i);
-            } else if(currLine.vert1.GetInstanceID() == theVert.GetInstanceID()){
-                if(seenVerts.Contains(currLine.vert2.GetInstanceID())) {
-                    linesToRemove.Add(i);
-                } else {
-                    seenVerts.Add(currLine.vert2.GetInstanceID());
-                }
-            } else if(currLine.vert2.GetInstanceID() == theVert.GetInstanceID()) {
-                if(seenVerts.Contains(currLine.vert1.GetInstanceID())) {
-                    linesToRemove.Add(i);
-                } else {
-                    seenVerts.Add(currLine.vert1.GetInstanceID());
-                }
-            } else {
-                DebugText.log("we fucked up");
-            }
-        }
+    //         if (currLine.vert1.GetInstanceID() == currLine.vert2.GetInstanceID()) {
+    //             linesToRemove.Add(i);
+    //         } else if(currLine.vert1.GetInstanceID() == theVert.GetInstanceID()){
+    //             if(seenVerts.Contains(currLine.vert2.GetInstanceID())) {
+    //                 linesToRemove.Add(i);
+    //             } else {
+    //                 seenVerts.Add(currLine.vert2.GetInstanceID());
+    //             }
+    //         } else if(currLine.vert2.GetInstanceID() == theVert.GetInstanceID()) {
+    //             if(seenVerts.Contains(currLine.vert1.GetInstanceID())) {
+    //                 linesToRemove.Add(i);
+    //             } else {
+    //                 seenVerts.Add(currLine.vert1.GetInstanceID());
+    //             }
+    //         } else {
+    //             DebugText.log("we fucked up");
+    //         }
+    //     }
 
-        DebugText.log($"seenVerts size: {seenVerts.Count} linesToRemoveSize: {linesToRemove.Count}");
-        for(int i=0; i < linesToRemove.Count; i ++) {
-            Destroy(theVert.lines[linesToRemove[i]].gameObject);
-            DebugText.log($"Removed line at idx {linesToRemove[i]}. {theVert.lines[linesToRemove[i]].gameObject.name}" );
+    //     DebugText.log($"seenVerts size: {seenVerts.Count} linesToRemoveSize: {linesToRemove.Count}");
+    //     for(int i=0; i < linesToRemove.Count; i ++) {
+    //         Destroy(theVert.lines[linesToRemove[i]].gameObject);
+    //         DebugText.log($"Removed line at idx {linesToRemove[i]}. {theVert.lines[linesToRemove[i]].gameObject.name}" );
 
-            // theVert.lines.RemoveAt(linesToRemove[i]);
+    //         // theVert.lines.RemoveAt(linesToRemove[i]);
 
-        }
+    //     }
 
-    }
+    // }
     bool DoesLineExist(Vertex v1, Vertex v2, List<Line> lines) {
         for(int i=0; i < lines.Count; i++) {
             if((lines[i].vert1 == v1.gameObject && lines[i].vert2 == v2.gameObject) ||(lines[i].vert1 == v2.gameObject && lines[i].vert2 == v1.gameObject)) {
@@ -203,13 +203,8 @@ public class HandManager : MonoBehaviour
     }
     void OnTriggerEnter(Collider obj) {
         Grabbable grb = obj.gameObject.GetComponent<Grabbable>();
-        // DebugText.log($"Entered Collision {obj.gameObject.name}");
-        //MIGHT HAVE TO IMPLEMENT != or == for grabbable
-        // Debug.Log($"grb: {grb.gameObject}");
-        // Debug.Log($"currGrabbable{currGrabbable.gameObject}");
-        // DebugText.log($"Grb: {grb.GetType().ToString()}");
         
-        if (grb != null && grb.GetType() == typeof(Vertex) && currGrabbable != null && currGrabbable.GetType() == typeof(Vertex) && grb.gameObject.GetInstanceID() != currGrabbable.gameObject.GetInstanceID()) {
+        if (grb != null && grb.GetType() == typeof(Vertex) && currGrabbable != null && currGrabbable.GetType() == typeof(Vertex) && grb.gameObject.GetInstanceID() != currGrabbable.gameObject.GetInstanceID()) { //Found a vert while moving a different vert
             List<Line> otherLines = grb.GetComponent<Vertex>().lines;
             DebugText.log($"{otherLines.Count} {Time.time}");
             for(int i = 0; i < otherLines.Count; i++){
@@ -237,9 +232,13 @@ public class HandManager : MonoBehaviour
                 }
 
             }
+            currGrabbable.GetComponent<Vertex>().StealFaces(grb.GetComponent<Vertex>());
             Destroy(grb.gameObject);
             // CleanLines(currGrabbable.gameObject.GetComponent<Vertex>());
             grb = currGrabbable;
+            grb.GetComponent<Vertex>().SpawnNewFaces();
+            // grb.GetComponent<Vertex>().CullFaces();
+            
         }
 
         if(grb != null) {
@@ -248,10 +247,10 @@ public class HandManager : MonoBehaviour
                     currGrabbable = grb.Pinch();
                     
                 }
-                currGrabbable.Grab(domHand.PointerPose);
+                currGrabbable.Grab(domHand.PointerPose.transform.position);
 
             } else { //Grab for left hand
-                grb.Grab(domHand.PointerPose);
+                grb.Grab(domHand.PointerPose.transform.position);
                 currGrabbable = grb;
             }
 

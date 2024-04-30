@@ -25,7 +25,7 @@ public class GrabberExample : MonoBehaviour
             StartCoroutine(GrabObj(currGrabbed));
         }
         if(Input.GetKeyDown(KeyCode.L)) {
-            Grabbable movableLine = theLine.Grab(gameObject.transform);
+            Grabbable movableLine = theLine.Grab(gameObject.transform.position);
             StartCoroutine(GrabLine(movableLine));
         }
     }
@@ -37,7 +37,7 @@ public class GrabberExample : MonoBehaviour
             currPos.y += i /20f;
             currPos.z += i/25f;
             gameObject.transform.position = currPos;
-            theObj.Grab(gameObject.transform);
+            theObj.Grab(gameObject.transform.position);
             yield return new WaitForSeconds(0.1f);
         }
     }
@@ -48,7 +48,7 @@ public class GrabberExample : MonoBehaviour
             currPos.y += i / 5f;
             currPos.z += i/ 15f;
             gameObject.transform.position = currPos;
-            line.Grab(gameObject.transform);
+            line.Grab(gameObject.transform.position);
             yield return new WaitForSeconds(0.1f);
         }
     }

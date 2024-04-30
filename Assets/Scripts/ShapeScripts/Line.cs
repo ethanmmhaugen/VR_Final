@@ -27,7 +27,7 @@ public class Line : Grabbable
         }
         SetupLinerenderer();
         gameObject.tag = "Drawable";
-        DebugText.log("Setting Tag to drawable in line");
+        // DebugText.log("Setting Tag to drawable in line");
         localHitbox = gameObject.AddComponent<CapsuleCollider>();
 
     }
@@ -44,8 +44,15 @@ public class Line : Grabbable
     }
 
     private void UpdateLinePositions() {
-        vertPositions[0] = vert1.transform.position;
-        vertPositions[1] = vert2.transform.position;
+        if(vert1 != null) {
+            vertPositions[0] = vert1.transform.position;
+
+        }
+        if(vert2 != null) {
+            vertPositions[1] = vert2.transform.position;
+
+        }
+
         lr.SetPositions(vertPositions);
     }
     // Update is called once per frame
@@ -59,6 +66,7 @@ public class Line : Grabbable
 
     }
     private void UpdateCollider() {
+        if(vert1 == null || vert2 == null) {return;}
         
         Vector3 v1Position = vert1.transform.position;
         Vector3 v2Position = vert2.transform.position;
@@ -108,6 +116,22 @@ public class Line : Grabbable
         vert1.GetComponent<Vertex>().lines.Add(nl1Line);
         vert2.GetComponent<Vertex>().lines.Add(nl2Line);
         
+        GameObject faceObj = new GameObject("NewFace");
+        Face faceComponent = faceObj.GetOrAddComponent<Face>();
+
+        newVertComp.faces.Add(faceComponent);
+        vert1.GetComponent<Vertex>().faces.Add(faceComponent);
+        vert2.GetComponent<Vertex>().faces.Add(faceComponent);
+
+        faceComponent.vertices.Add(vert1.GetComponent<Vertex>());
+        faceComponent.vertices.Add(vert2.GetComponent<Vertex>());
+        faceComponent.vertices.Add(newVertComp);
+
+        faceComponent.lines.Add(gameObject.GetComponent<Line>());
+        faceComponent.lines.Add(newLine1.GetComponent<Line>());
+        faceComponent.lines.Add(newLine2.GetComponent<Line>());
+
+
         return newVert.GetComponent<Vertex>();
     }
 
@@ -117,7 +141,7 @@ public class Line : Grabbable
         grabbableCoroutineRunning = false;
         beingGrabbed = false;
     }
-    public override Grabbable Grab(Transform grabbingTrans)
+    public override Grabbable Grab(Vector3 grabbingTrans)
     {   
         if(grabCR != null && grabbableCoroutineRunning) {
             StopCoroutine(grabCR);
@@ -128,10 +152,12 @@ public class Line : Grabbable
         
         bool shouldSpawnShape = false;
         if(isPartOfFace) {
-            Vector3 direction = grabbingTrans.position - gameObject.transform.position;
-            vert1.transform.position += direction;
-            vert2.transform.position += direction;
-            gameObject.transform.position = grabbingTrans.transform.position;
+            Vector3 direction = grabbingTrans - gameObject.transform.position;
+            // vert1.transform.position += direction;
+            // vert2.transform.position += direction;
+            vert1.GetComponent<Vertex>().Grab(vert1.transform.position + direction);
+            vert2.GetComponent<Vertex>().Grab(vert2.transform.position + direction);
+            gameObject.transform.position = grabbingTrans;
 
         } else {
             shouldSpawnShape = true;
@@ -164,7 +190,7 @@ public class Line : Grabbable
             nl2Line.vert1 = dupLine.vert2;
             nl2Line.vert2 = newVert2;
 
-            gameObject.transform.position = grabbingTrans.transform.position;
+            gameObject.transform.position = grabbingTrans;
             isPartOfFace = true;
             nl1Line.isPartOfFace = true;
             nl2Line.isPartOfFace = true;
@@ -192,7 +218,13 @@ public class Line : Grabbable
 
             //Make the face
             GameObject faceObj = new GameObject("NewFace");
+            // faceObj.transform.position = gameObject.transform.position;
             Face faceComponent = faceObj.GetOrAddComponent<Face>();
+
+            dupLine.vert1.GetComponent<Vertex>().faces.Add(faceComponent);
+            dupLine.vert2.GetComponent<Vertex>().faces.Add(faceComponent);
+            vert1.GetComponent<Vertex>().faces.Add(faceComponent);
+            vert2.GetComponent<Vertex>().faces.Add(faceComponent);
 
             faceComponent.vertices.Add(dupLine.vert1.GetComponent<Vertex>());
             faceComponent.vertices.Add(dupLine.vert2.GetComponent<Vertex>());
@@ -211,8 +243,14 @@ public class Line : Grabbable
         return gameObject.GetComponent<Line>();
     }
     void OnDestroy() {
-        ClearSelfFromVert(vert2.GetComponent<Vertex>());
-        ClearSelfFromVert(vert1.GetComponent<Vertex>());
+        if(vert2 != null) {
+            ClearSelfFromVert(vert2.GetComponent<Vertex>());
+
+        }
+        if(vert1 != null) {
+            ClearSelfFromVert(vert1.GetComponent<Vertex>());
+
+        }
     }
 
     void ClearSelfFromVert(Vertex vert) {
