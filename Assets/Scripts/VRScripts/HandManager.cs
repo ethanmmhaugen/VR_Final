@@ -56,7 +56,7 @@ public class HandManager : MonoBehaviour
                         vertSpawner = spawnVertex();
                         StartCoroutine(vertSpawner);
 
-                    } else if(currGrabbable != null) {
+                    } else if(currGrabbable != null && vertSpawner != null) {
                         StopCoroutine(vertSpawner);
                         // DebugText.log("Stopping Coroutine");
                         spawningVertex = false;
